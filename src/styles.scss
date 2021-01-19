@@ -1,1 +1,47 @@
 /* You can add global styles to this file, and also import other style files */
+
+@font-face {
+    font-family: 'Iwona-regular';
+    src: url('/assets/font/Iwona-Regular.ttf');
+}
+
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+* {
+    padding: 0;
+    margin: 0;
+    user-select: none;
+}
+
+mat-form-field.mat-form-field.math-field {
+    background-color: white;
+    max-width: 80px;
+    &.window {
+        max-width: 120px;
+    }
+    .mat-form-field-flex {
+        background-color: inherit;
+        padding: 0;
+    }
+    mat-label {
+        font-size: 20px;
+        .under-stroke {
+            font-size: 10px;
+        }
+    }
+}
+
+.greek {
+    font-family: 'Iwona-regular', 'Helvetica Neue', sans-serif;
+}
+
+input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0;
+}

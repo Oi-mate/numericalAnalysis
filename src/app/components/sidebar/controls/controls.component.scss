@@ -1,0 +1,37 @@
+:host {
+    max-width: inherit;
+}
+
+.math-inputs {
+    max-width: inherit;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0 2rem 0 1rem;
+    justify-content: space-around;
+}
+
+.subtitle {
+    font-size: 16px;
+    margin: 1.5rem 1rem 1rem 1rem;
+    display: flex;
+    .rnd {
+        margin-top: -10px;
+    }
+}
+
+.rnd {
+    cursor: pointer;
+    background-image: url('/assets/img/random.svg');
+    background-size: 51%;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    min-height: 20px;
+    min-width: 20px;
+    display: block;
+    margin: 0 -7px -11px 0;
+    padding: 5px;
+    transition: transform 0.3s;
+    &:hover {
+        transform: rotate(90deg);
+    }
+}

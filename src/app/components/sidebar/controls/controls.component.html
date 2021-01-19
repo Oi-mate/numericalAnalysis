@@ -1,0 +1,264 @@
+<mat-divider></mat-divider>
+<div class="subtitle">
+    Параметры функции
+    <span class="rnd" (click)="service.randomizeFunctionArgs()"></span>
+</div>
+<div class="math-inputs" [formGroup]="service.functionArgsForm">
+    <mat-form-field appearance="fill" class="math-field greek">
+        <mat-label class="math-label">α</mat-label>
+        <input
+            formControlName="alpha"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.functionArgsForm,
+                    'alpha',
+                    randomFunctionArg
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field greek">
+        <mat-label class="math-label">β</mat-label>
+        <input
+            formControlName="beta"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.functionArgsForm,
+                    'beta',
+                    randomFunctionArg
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field greek">
+        <mat-label class="math-label">γ</mat-label>
+        <input
+            formControlName="gamma"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.functionArgsForm,
+                    'gamma',
+                    randomFunctionArg
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field greek">
+        <mat-label class="math-label">δ</mat-label>
+        <input
+            formControlName="delta"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.functionArgsForm,
+                    'delta',
+                    randomFunctionArg
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field greek">
+        <mat-label class="math-label">ε</mat-label>
+        <input
+            formControlName="epsilon"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.functionArgsForm,
+                    'epsilon',
+                    randomFunctionArg()
+                )
+            "
+        ></span>
+    </mat-form-field>
+</div>
+<mat-divider></mat-divider>
+<div class="subtitle">
+    Параметры Окна
+    <span
+        class="rnd"
+        (click)="service.randomizeWindowFrame()"
+        matTooltip="Может повлечь за собой изменение Xo"
+    ></span>
+</div>
+<div class="math-inputs" [formGroup]="service.windowFrameForm">
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label">A</mat-label>
+        <input
+            formControlName="windowA"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.windowFrameForm,
+                    'windowA',
+                    randomFieldMinimum
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label">B</mat-label>
+        <input
+            formControlName="windowB"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.windowFrameForm,
+                    'windowB',
+                    randomFieldMaximum
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label">C</mat-label>
+        <input
+            formControlName="windowC"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.windowFrameForm,
+                    'windowC',
+                    randomFieldMinimum
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label">D</mat-label>
+        <input
+            formControlName="windowD"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.windowFrameForm,
+                    'windowD',
+                    randomFieldMaximum
+                )
+            "
+        ></span>
+    </mat-form-field>
+</div>
+<mat-divider></mat-divider>
+<div class="subtitle">
+    Прочие параметры
+    <span class="rnd" (click)="service.randomizeOtherArgs()"></span>
+</div>
+<div class="math-inputs" [formGroup]="service.othersForm">
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label">n</mat-label>
+        <input formControlName="n" type="number" matInput autocomplete="off" />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.othersForm,
+                    'n',
+                    randomInterpolationSteps
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label">m</mat-label>
+        <input formControlName="m" type="number" matInput autocomplete="off" />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(
+                    service.othersForm,
+                    'm',
+                    randomInterpolationSteps
+                )
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label">p</mat-label>
+        <input formControlName="p" type="number" matInput autocomplete="off" />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(service.othersForm, 'p', randomPrescision)
+            "
+        ></span>
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label"
+            >x<span class="under-stroke">o</span></mat-label
+        >
+        <input
+            formControlName="XZero"
+            type="number"
+            matInput
+            autocomplete="off"
+        />
+        <span
+            matSuffix
+            class="rnd"
+            (click)="
+                service.randomize(service.othersForm, 'XZero', randomXZero)
+            "
+        ></span>
+    </mat-form-field>
+</div>

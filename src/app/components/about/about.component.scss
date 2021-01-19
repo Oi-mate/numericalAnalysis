@@ -1,0 +1,15 @@
+.about {
+    color: #999;
+    font-size: 14px;
+    pointer-events: auto;
+    cursor: default;
+    bottom: 0;
+    right: 0;
+    padding: 1rem;
+    position: absolute;
+    transition: font-size 0.5s, color 0.5s;
+    &:hover {
+        font-size: 18px;
+        color: #444;
+    }
+}
