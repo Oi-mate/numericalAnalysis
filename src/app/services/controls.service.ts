@@ -64,7 +64,7 @@ export class ControlsService implements OnDestroy {
     }
 
     resolveQuery(): void {
-        this.route.queryParams.pipe(skip(1)).subscribe(x => {
+        this.route.queryParams.subscribe(x => {
             Object.keys(x).length
                 ? this.updateFormsValuesFromQuery(x)
                 : this.updateQuery();
