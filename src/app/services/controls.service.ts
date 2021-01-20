@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
     generateRandomField,
     generateRandomFunctionArgs,
@@ -8,16 +8,39 @@ import {
     randomXZero,
 } from '../utils/random';
 import { ActivatedRoute, Router } from '@angular/router';
-import { skip } from 'rxjs/operators';
 import { combineLatest, Subscription } from 'rxjs';
+import {
+    betweenValidator,
+    boundsValidator,
+    minMaxRangeValidator,
+} from '../utils/validators';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ControlsService implements OnDestroy {
-    public functionArgsForm: FormGroup;
-    public windowFrameForm: FormGroup;
-    public othersForm: FormGroup;
+    public functionArgsForm = this.fb.group({
+        alpha: ['', [Validators.required, minMaxRangeValidator(-100, 100)]],
+        beta: ['', [Validators.required, minMaxRangeValidator(-100, 100)]],
+        gamma: ['', [Validators.required, minMaxRangeValidator(-100, 100)]],
+        delta: ['', [Validators.required, minMaxRangeValidator(-100, 100)]],
+        epsilon: { value: '', disabled: true },
+    });
+    public windowFrameForm = this.fb.group(
+        {
+            windowA: ['', [Validators.required]],
+            windowB: ['', [Validators.required]],
+            windowC: ['', [Validators.required]],
+            windowD: ['', [Validators.required]],
+        },
+        { validator: boundsValidator },
+    );
+    public othersForm = this.fb.group({
+        XZero: ['', [Validators.required]],
+        n: ['', [Validators.required, minMaxRangeValidator(1, 500)]],
+        m: ['', [Validators.required, minMaxRangeValidator(1, 500)]],
+        p: ['', [Validators.required, minMaxRangeValidator(0, 25)]],
+    });
 
     private masterSub = new Subscription();
 
@@ -26,16 +49,50 @@ export class ControlsService implements OnDestroy {
         private router: Router,
         private route: ActivatedRoute,
     ) {
-        this.functionArgsForm = this.fb.group(generateRandomFunctionArgs());
-        this.windowFrameForm = this.fb.group(generateRandomField());
-        this.othersForm = this.fb.group(
+        this.functionArgsForm.patchValue(generateRandomFunctionArgs());
+        this.initFrameForm();
+        this.initOthersForm();
+        this.resolveQuery();
+        this.createUpdateLinkSubscription();
+    }
+
+    private initFrameForm() {
+        this.windowFrameForm.patchValue(generateRandomField());
+        this.windowFrameForm.controls.windowA.setValidators(
+            boundsValidator(this.windowFrameForm, 'windowB', true),
+        );
+        this.windowFrameForm.controls.windowB.setValidators(
+            boundsValidator(this.windowFrameForm, 'windowA', false),
+        );
+        this.windowFrameForm.controls.windowC.setValidators(
+            boundsValidator(this.windowFrameForm, 'windowD', true),
+        );
+        this.windowFrameForm.controls.windowD.setValidators(
+            boundsValidator(this.windowFrameForm, 'windowC', false),
+        );
+    }
+
+    private initOthersForm() {
+        this.othersForm.patchValue(
             generateRandomOthersForm(
                 this.windowFrameForm.getRawValue().windowC,
                 this.windowFrameForm.getRawValue().windowD,
             ),
         );
-        this.resolveQuery();
-        this.createUpdateLinkSubscription();
+        this.masterSub.add(
+            combineLatest([
+                this.windowFrameForm.controls.windowC.valueChanges,
+                this.windowFrameForm.controls.windowD.valueChanges,
+            ]).subscribe(() =>
+                this.othersForm.controls.XZero.setValidators([
+                    betweenValidator(
+                        this.windowFrameForm.controls.windowC.value,
+                        this.windowFrameForm.controls.windowC.value,
+                    ),
+                ]),
+
+            ),
+        );
     }
 
     ngOnDestroy(): void {
@@ -95,13 +152,18 @@ export class ControlsService implements OnDestroy {
         }
         if (+values.windowC > currentXZero || +values.windowD < currentXZero) {
             this.othersForm.controls.XZero.patchValue(
-                randomXZero(values.windowC, values.windowD),
+                randomXZero(+values.windowC, +values.windowD),
             );
         }
     }
 
     public randomizeOtherArgs() {
-        this.functionArgsForm.patchValue(generateRandomFunctionArgs());
+        this.othersForm.patchValue(
+            generateRandomOthersForm(
+                +this.windowFrameForm.getRawValue().windowC,
+                +this.windowFrameForm.getRawValue().windowD,
+            ),
+        );
     }
 
     public randomize(form: FormGroup, field, fn) {
@@ -123,6 +185,7 @@ export class ControlsService implements OnDestroy {
                 break;
             case 'windowC':
                 newVal = fn();
+                console.log(newVal);
                 if (newVal > +form.getRawValue().windowD) {
                     form.controls.windowC.patchValue(newVal);
                     form.controls.windowD.patchValue(
