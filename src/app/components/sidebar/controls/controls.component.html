@@ -23,6 +23,16 @@
                 )
             "
         ></span>
+        <mat-error
+            class="greek"
+            *ngIf="service.functionArgsForm.controls.alpha.errors?.range"
+            ><span class="centerize">α</span>∉[-100;100]</mat-error
+        >
+        <mat-error
+            class="greek"
+            *ngIf="service.functionArgsForm.controls.alpha.errors?.required"
+            >!<span class="centerize">α</span></mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field greek">
         <mat-label class="math-label">β</mat-label>
@@ -43,6 +53,14 @@
                 )
             "
         ></span>
+        <mat-error *ngIf="service.functionArgsForm.controls.beta.errors?.range"
+            ><span class="centerize">β</span>∉[-100;100]</mat-error
+        >
+        <mat-error
+            class="greek"
+            *ngIf="service.functionArgsForm.controls.beta.errors?.required"
+            >!<span class="centerize">β</span></mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field greek">
         <mat-label class="math-label">γ</mat-label>
@@ -63,6 +81,14 @@
                 )
             "
         ></span>
+        <mat-error *ngIf="service.functionArgsForm.controls.gamma.errors?.range"
+            ><span class="centerize">γ</span>∉[-100;100]</mat-error
+        >
+        <mat-error
+            class="greek"
+            *ngIf="service.functionArgsForm.controls.gamma.errors?.required"
+            >!<span class="centerize">γ</span></mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field greek">
         <mat-label class="math-label">δ</mat-label>
@@ -83,6 +109,14 @@
                 )
             "
         ></span>
+        <mat-error *ngIf="service.functionArgsForm.controls.delta.errors?.range"
+            ><span class="centerize">δ</span>∉[-100;100]</mat-error
+        >
+        <mat-error
+            class="greek"
+            *ngIf="service.functionArgsForm.controls.delta.errors?.required"
+            >!<span class="centerize">δ</span></mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field greek">
         <mat-label class="math-label">ε</mat-label>
@@ -103,6 +137,15 @@
                 )
             "
         ></span>
+        <mat-error
+            *ngIf="service.functionArgsForm.controls.epsilon.errors?.range"
+            ><span class="centerize">ε</span>∉[-100;100]</mat-error
+        >
+        <mat-error
+            class="greek"
+            *ngIf="service.functionArgsForm.controls.epsilon.errors?.required"
+            >!<span class="centerize">ε</span></mat-error
+        >
     </mat-form-field>
 </div>
 <mat-divider></mat-divider>
@@ -134,6 +177,16 @@
                 )
             "
         ></span>
+        <mat-error
+            *ngIf="
+                service.windowFrameForm.controls.windowA.errors?.illegalBound
+            "
+            >A>B</mat-error
+        >
+        <mat-error
+            *ngIf="service.windowFrameForm.controls.windowA.errors?.required"
+            >!A</mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field window">
         <mat-label class="math-label">B</mat-label>
@@ -154,6 +207,16 @@
                 )
             "
         ></span>
+        <mat-error
+            *ngIf="
+                service.windowFrameForm.controls.windowB.errors?.illegalBound
+            "
+            >B < A</mat-error
+        >
+        <mat-error
+            *ngIf="service.windowFrameForm.controls.windowB.errors?.required"
+            >!B</mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field window">
         <mat-label class="math-label">C</mat-label>
@@ -174,6 +237,16 @@
                 )
             "
         ></span>
+        <mat-error
+            *ngIf="
+                service.windowFrameForm.controls.windowC.errors?.illegalBound
+            "
+            >C > D</mat-error
+        >
+        <mat-error
+            *ngIf="service.windowFrameForm.controls.windowC.errors?.required"
+            >!C</mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field window">
         <mat-label class="math-label">D</mat-label>
@@ -194,6 +267,16 @@
                 )
             "
         ></span>
+        <mat-error
+            *ngIf="
+                service.windowFrameForm.controls.windowD.errors?.illegalBound
+            "
+            >D < C</mat-error
+        >
+        <mat-error
+            *ngIf="service.windowFrameForm.controls.windowD.errors?.required"
+            >!D</mat-error
+        >
     </mat-form-field>
 </div>
 <mat-divider></mat-divider>
@@ -201,7 +284,7 @@
     Прочие параметры
     <span class="rnd" (click)="service.randomizeOtherArgs()"></span>
 </div>
-<div class="math-inputs" [formGroup]="service.othersForm">
+<div class="math-inputs" [formGroup]="service.interpolationForm">
     <mat-form-field appearance="fill" class="math-field window">
         <mat-label class="math-label">n</mat-label>
         <input formControlName="n" type="number" matInput autocomplete="off" />
@@ -210,12 +293,22 @@
             class="rnd"
             (click)="
                 service.randomize(
-                    service.othersForm,
+                    service.interpolationForm,
                     'n',
                     randomInterpolationSteps
                 )
             "
         ></span>
+        <mat-error
+            *ngIf="
+                service.interpolationForm.controls.n.errors?.range &&
+                !service.interpolationForm.controls.p.errors?.required
+            "
+            >n∉[1;500]</mat-error
+        >
+        <mat-error *ngIf="service.interpolationForm.controls.n.errors?.required"
+            >!n</mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field window">
         <mat-label class="math-label">m</mat-label>
@@ -225,12 +318,22 @@
             class="rnd"
             (click)="
                 service.randomize(
-                    service.othersForm,
+                    service.interpolationForm,
                     'm',
                     randomInterpolationSteps
                 )
             "
         ></span>
+        <mat-error
+            *ngIf="
+                service.interpolationForm.controls.m.errors?.range &&
+                !service.interpolationForm.controls.p.errors?.required
+            "
+            >m∉[1;500]</mat-error
+        >
+        <mat-error *ngIf="service.interpolationForm.controls.m.errors?.required"
+            >!m</mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field window">
         <mat-label class="math-label">p</mat-label>
@@ -239,9 +342,23 @@
             matSuffix
             class="rnd"
             (click)="
-                service.randomize(service.othersForm, 'p', randomPrescision)
+                service.randomize(
+                    service.interpolationForm,
+                    'p',
+                    randomPrescision
+                )
             "
         ></span>
+        <mat-error
+            *ngIf="
+                service.interpolationForm.controls.p.errors?.range &&
+                !service.interpolationForm.controls.p.errors?.required
+            "
+            >p∉[1;25]</mat-error
+        >
+        <mat-error *ngIf="service.interpolationForm.controls.p.errors?.required"
+            >!p</mat-error
+        >
     </mat-form-field>
     <mat-form-field appearance="fill" class="math-field window">
         <mat-label class="math-label"
@@ -257,8 +374,27 @@
             matSuffix
             class="rnd"
             (click)="
-                service.randomize(service.othersForm, 'XZero', randomXZero)
+                service.randomize(
+                    service.interpolationForm,
+                    'XZero',
+                    randomXZero
+                )
             "
         ></span>
+        <mat-error
+            *ngIf="
+                service.interpolationForm.controls.XZero.errors?.required &&
+                !service.interpolationForm.controls.XZero.errors
+                    ?.illegalXZeroValue
+            "
+            >!x<span class="under-stroke">o</span></mat-error
+        >
+        <mat-error
+            *ngIf="
+                service.interpolationForm.controls.XZero.errors
+                    ?.illegalXZeroValue
+            "
+            >!X<span class="under-stroke">o</span></mat-error
+        >
     </mat-form-field>
 </div>

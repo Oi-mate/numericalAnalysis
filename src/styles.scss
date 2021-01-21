@@ -20,6 +20,7 @@ body {
 }
 
 mat-form-field.mat-form-field.math-field {
+    margin-bottom: 8px;
     background-color: white;
     max-width: 80px;
     &.window {
@@ -31,8 +32,17 @@ mat-form-field.mat-form-field.math-field {
     }
     mat-label {
         font-size: 20px;
-        .under-stroke {
-            font-size: 10px;
+    }
+    .under-stroke {
+        font-size: 60%;
+    }
+    .mat-error {
+        margin-left: -9px;
+        font-size: 14px;
+        &.greek {
+            font-size: 13px;
+            margin-top: -6px;
+            margin-left: -9px;
         }
     }
 }

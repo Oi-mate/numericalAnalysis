@@ -8,12 +8,14 @@ import {
     randomXZero,
 } from '../utils/random';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, Subscription } from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, race, Subscription} from 'rxjs';
 import {
     betweenValidator,
-    boundsValidator,
+    BoundsValidator,
     minMaxRangeValidator,
 } from '../utils/validators';
+import {debounceTime, filter, skip, take, tap} from 'rxjs/operators';
+import {IFunctionArgs, IInterpolationArgs, IWindowFrame} from '../models/types/coefficientTypes';
 
 @Injectable({
     providedIn: 'root',
@@ -26,23 +28,30 @@ export class ControlsService implements OnDestroy {
         delta: ['', [Validators.required, minMaxRangeValidator(-100, 100)]],
         epsilon: { value: '', disabled: true },
     });
-    public windowFrameForm = this.fb.group(
-        {
-            windowA: ['', [Validators.required]],
-            windowB: ['', [Validators.required]],
-            windowC: ['', [Validators.required]],
-            windowD: ['', [Validators.required]],
-        },
-        { validator: boundsValidator },
-    );
-    public othersForm = this.fb.group({
-        XZero: ['', [Validators.required]],
+    public windowFrameForm = this.fb.group({
+        windowA: ['', [Validators.required]],
+        windowB: ['', [Validators.required]],
+        windowC: ['', [Validators.required]],
+        windowD: ['', [Validators.required]],
+    });
+    public interpolationForm = this.fb.group({
+        XZero: [''],
         n: ['', [Validators.required, minMaxRangeValidator(1, 500)]],
         m: ['', [Validators.required, minMaxRangeValidator(1, 500)]],
         p: ['', [Validators.required, minMaxRangeValidator(0, 25)]],
     });
 
     private masterSub = new Subscription();
+    // tslint:disable-next-line:variable-name
+    private _functionArgs = new BehaviorSubject<IFunctionArgs>(undefined);
+    public functionArgs$: Observable<IFunctionArgs> = this._functionArgs.pipe(filter(x => !!x));
+    // tslint:disable-next-line:variable-name
+    private _windowFrame = new BehaviorSubject<IWindowFrame>(undefined);
+    public windowFrame$: Observable<IWindowFrame> = this._windowFrame.pipe(filter(x => !!x));
+
+    // tslint:disable-next-line:variable-name
+    private _interpolationArgs = new BehaviorSubject<IInterpolationArgs>(undefined);
+    public interpolationArgs$: Observable<IInterpolationArgs> = this._interpolationArgs.pipe(filter(x => !!x));
 
     constructor(
         private fb: FormBuilder,
@@ -50,30 +59,54 @@ export class ControlsService implements OnDestroy {
         private route: ActivatedRoute,
     ) {
         this.functionArgsForm.patchValue(generateRandomFunctionArgs());
+        this.functionArgsForm.markAllAsTouched();
         this.initFrameForm();
         this.initOthersForm();
-        this.resolveQuery();
-        this.createUpdateLinkSubscription();
+        this.updateParams();
+        this.createUpdateParamsSubscription();
     }
 
     private initFrameForm() {
         this.windowFrameForm.patchValue(generateRandomField());
-        this.windowFrameForm.controls.windowA.setValidators(
-            boundsValidator(this.windowFrameForm, 'windowB', true),
+        this.windowFrameForm.controls.windowA.setAsyncValidators([
+            BoundsValidator.createValidator(
+                this.windowFrameForm,
+                'windowB',
+                true,
+            ),
+        ]);
+        this.windowFrameForm.controls.windowB.setAsyncValidators([
+            BoundsValidator.createValidator(
+                this.windowFrameForm,
+                'windowA',
+                false,
+            ),
+        ]);
+        this.windowFrameForm.controls.windowC.setAsyncValidators([
+            BoundsValidator.createValidator(
+                this.windowFrameForm,
+                'windowD',
+                true,
+            ),
+        ]);
+        this.windowFrameForm.controls.windowD.setAsyncValidators([
+            BoundsValidator.createValidator(
+                this.windowFrameForm,
+                'windowC',
+                false,
+            ),
+        ]);
+        this.windowFrameForm.updateValueAndValidity();
+        this.masterSub.add(
+            combineLatest([
+                this.windowFrameForm.controls.windowA.valueChanges,
+            ]).subscribe(),
         );
-        this.windowFrameForm.controls.windowB.setValidators(
-            boundsValidator(this.windowFrameForm, 'windowA', false),
-        );
-        this.windowFrameForm.controls.windowC.setValidators(
-            boundsValidator(this.windowFrameForm, 'windowD', true),
-        );
-        this.windowFrameForm.controls.windowD.setValidators(
-            boundsValidator(this.windowFrameForm, 'windowC', false),
-        );
+        this.windowFrameForm.markAllAsTouched();
     }
 
     private initOthersForm() {
-        this.othersForm.patchValue(
+        this.interpolationForm.patchValue(
             generateRandomOthersForm(
                 this.windowFrameForm.getRawValue().windowC,
                 this.windowFrameForm.getRawValue().windowD,
@@ -83,87 +116,114 @@ export class ControlsService implements OnDestroy {
             combineLatest([
                 this.windowFrameForm.controls.windowC.valueChanges,
                 this.windowFrameForm.controls.windowD.valueChanges,
-            ]).subscribe(() =>
-                this.othersForm.controls.XZero.setValidators([
-                    betweenValidator(
-                        this.windowFrameForm.controls.windowC.value,
-                        this.windowFrameForm.controls.windowC.value,
-                    ),
-                ]),
-
-            ),
+            ])
+                .pipe(debounceTime(1))
+                .subscribe(() => {
+                    this.setZXeroValidators();
+                }),
         );
+        this.setZXeroValidators();
+        this.interpolationForm.markAllAsTouched();
+    }
+
+    private setZXeroValidators() {
+        this.interpolationForm.controls.XZero.setValidators([
+            betweenValidator(
+                this.windowFrameForm.controls.windowC.value,
+                this.windowFrameForm.controls.windowD.value,
+            ),
+            Validators.required,
+        ]);
+        this.interpolationForm.controls.XZero.updateValueAndValidity();
     }
 
     ngOnDestroy(): void {
         this.masterSub.unsubscribe();
     }
 
-    createUpdateLinkSubscription() {
+    createUpdateParamsSubscription() {
         this.masterSub.add(
-            combineLatest([
+            race([
                 this.functionArgsForm.valueChanges,
                 this.windowFrameForm.valueChanges,
-                this.othersForm.valueChanges,
-            ]).subscribe(() => this.updateQuery()),
+                this.interpolationForm.valueChanges,
+            ]).pipe(debounceTime(1), skip(1), tap(console.log))
+                .subscribe(() => this.updateParams()),
         );
     }
 
-    updateQuery() {
-        this.router.navigate([], {
-            relativeTo: this.route,
-            queryParams: Object.assign(
-                this.functionArgsForm.getRawValue(),
-                this.othersForm.getRawValue(),
-                this.windowFrameForm.getRawValue(),
-            ),
-        });
+    updateParams() {
+        if (
+            this.windowFrameForm.valid &&
+            this.interpolationForm.valid &&
+            this.functionArgsForm.valid
+        ) {
+            this.router.navigate([], {
+                relativeTo: this.route,
+                queryParams: Object.assign(
+                    this.functionArgsForm.getRawValue(),
+                    this.interpolationForm.getRawValue(),
+                    this.windowFrameForm.getRawValue(),
+                ),
+            });
+            console.log(this.windowFrameForm.valid);
+            this._functionArgs.next(this.functionArgsForm.getRawValue());
+            this._interpolationArgs.next(this.interpolationForm.getRawValue());
+            this._windowFrame.next(this.windowFrameForm.getRawValue());
+        }
+
     }
 
     resolveQuery(): void {
-        this.route.queryParams.subscribe(x => {
+        this.route.queryParams.pipe(take(1)).subscribe(x => {
             Object.keys(x).length
                 ? this.updateFormsValuesFromQuery(x)
-                : this.updateQuery();
+                : this.updateParams();
         });
     }
 
     private updateFormsValuesFromQuery(params: any) {
         this.functionArgsForm.patchValue(params);
         this.windowFrameForm.patchValue(params);
-        this.othersForm.patchValue(params);
+        this.interpolationForm.patchValue(params);
     }
 
     public randomizeFunctionArgs() {
         this.functionArgsForm.patchValue(generateRandomFunctionArgs());
+        this.updateParams();
     }
 
     public randomizeWindowFrame() {
         const values = generateRandomField();
         this.windowFrameForm.patchValue(values);
         this.performXZeroCheck();
+        this.updateParams();
     }
 
     public performXZeroCheck() {
-        let currentXZero = this.othersForm.getRawValue().XZero;
+        let currentXZero = this.interpolationForm.getRawValue().XZero;
         const values = this.windowFrameForm.getRawValue();
         if (isNaN(currentXZero)) {
             currentXZero = randomXZero(+values.windowC, +values.windowD);
         }
         if (+values.windowC > currentXZero || +values.windowD < currentXZero) {
-            this.othersForm.controls.XZero.patchValue(
+            this.interpolationForm.controls.XZero.patchValue(
                 randomXZero(+values.windowC, +values.windowD),
+                { emitEvent: false },
             );
+            this.interpolationForm.controls.XZero.updateValueAndValidity();
+            this.updateParams();
         }
     }
 
     public randomizeOtherArgs() {
-        this.othersForm.patchValue(
+        this.interpolationForm.patchValue(
             generateRandomOthersForm(
                 +this.windowFrameForm.getRawValue().windowC,
                 +this.windowFrameForm.getRawValue().windowD,
             ),
         );
+        this.updateParams();
     }
 
     public randomize(form: FormGroup, field, fn) {
@@ -171,13 +231,15 @@ export class ControlsService implements OnDestroy {
         switch (field) {
             case 'windowA':
                 newVal = fn();
-                console.log(newVal, form.getRawValue().windowB);
                 if (newVal > +form.getRawValue().windowB) {
-                    form.controls.windowA.patchValue(newVal);
                     form.controls.windowB.patchValue(
                         randomFieldMaximum(newVal),
+                        { emitEvent: false },
                     );
                 }
+                form.controls.windowA.patchValue(newVal, {
+                    emitEvent: false,
+                });
                 break;
             case 'windowB':
                 newVal = fn(+form.getRawValue().windowA);
@@ -185,11 +247,11 @@ export class ControlsService implements OnDestroy {
                 break;
             case 'windowC':
                 newVal = fn();
-                console.log(newVal);
+                form.controls.windowC.patchValue(newVal, { emitEvent: false });
                 if (newVal > +form.getRawValue().windowD) {
-                    form.controls.windowC.patchValue(newVal);
                     form.controls.windowD.patchValue(
                         randomFieldMaximum(newVal),
+                        { emitEvent: false },
                     );
                 }
                 this.performXZeroCheck();
@@ -200,21 +262,23 @@ export class ControlsService implements OnDestroy {
                 this.performXZeroCheck();
                 break;
             case 'XZero':
-                this.othersForm.controls.XZero.patchValue(
+                this.interpolationForm.controls.XZero.patchValue(
                     fn(
                         +this.windowFrameForm.getRawValue().windowC,
                         +this.windowFrameForm.getRawValue().windowD,
                     ),
+                    { emitEvent: false },
                 );
                 break;
             default:
                 try {
-                    form.controls[field].patchValue(fn());
+                    form.controls[field].patchValue(fn(), { emitEvent: false });
                 } catch (e) {
                     console.error(
                         `an error occured while randomizing ${field} control on ${form} group with ${fn}`,
                     );
                 }
         }
+        this.updateParams();
     }
 }

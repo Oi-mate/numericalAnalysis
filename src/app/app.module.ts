@@ -15,6 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ChartContainerComponent } from './components/workspace/chart-container/chart-container.component';
 
 @NgModule({
     declarations: [
@@ -24,6 +25,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         FunctionRepresentComponent,
         AboutComponent,
         WorkspaceComponent,
+        ChartContainerComponent,
     ],
     imports: [
         FormsModule,

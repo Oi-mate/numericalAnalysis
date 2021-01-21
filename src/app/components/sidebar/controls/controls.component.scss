@@ -35,3 +35,18 @@
         transform: rotate(90deg);
     }
 }
+
+::ng-deep.mat-form-field-disabled {
+    .rnd {
+        opacity: 0.5;
+        &:hover {
+            transform: none;
+        }
+    }
+}
+
+.centerize {
+    line-height: 20px;
+    text-align: center;
+    font-size: 16px;
+}

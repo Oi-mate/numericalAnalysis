@@ -28,7 +28,7 @@ export const generateRandomFunctionArgs = () => ({
     beta: randomFunctionArg(),
     gamma: randomFunctionArg(),
     delta: randomFunctionArg(),
-    epsilon: { value: '', disabled: true },
+    epsilon: '',
 });
 
 export const generateRandomOthersForm = (XZeroMin, XZeroMax) => ({
