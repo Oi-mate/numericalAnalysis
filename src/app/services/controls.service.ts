@@ -8,14 +8,24 @@ import {
     randomXZero,
 } from '../utils/random';
 import { ActivatedRoute, Router } from '@angular/router';
-import {BehaviorSubject, combineLatest, Observable, race, Subscription} from 'rxjs';
+import {
+    BehaviorSubject,
+    combineLatest,
+    Observable,
+    race,
+    Subscription,
+} from 'rxjs';
 import {
     betweenValidator,
     BoundsValidator,
     minMaxRangeValidator,
 } from '../utils/validators';
-import {debounceTime, filter, skip, take, tap} from 'rxjs/operators';
-import {IFunctionArgs, IInterpolationArgs, IWindowFrame} from '../models/types/coefficientTypes';
+import { debounceTime, filter, skip, take, tap } from 'rxjs/operators';
+import {
+    IFunctionArgs,
+    IInterpolationArgs,
+    IWindowFrame,
+} from '../models/types/coefficientTypes';
 
 @Injectable({
     providedIn: 'root',
@@ -44,30 +54,42 @@ export class ControlsService implements OnDestroy {
     private masterSub = new Subscription();
     // tslint:disable-next-line:variable-name
     private _functionArgs = new BehaviorSubject<IFunctionArgs>(undefined);
-    public functionArgs$: Observable<IFunctionArgs> = this._functionArgs.pipe(filter(x => !!x));
+    public functionArgs$: Observable<IFunctionArgs> = this._functionArgs.pipe(
+        filter(x => !!x),
+    );
     // tslint:disable-next-line:variable-name
     private _windowFrame = new BehaviorSubject<IWindowFrame>(undefined);
-    public windowFrame$: Observable<IWindowFrame> = this._windowFrame.pipe(filter(x => !!x));
+    public windowFrame$: Observable<IWindowFrame> = this._windowFrame.pipe(
+        filter(x => !!x),
+    );
 
     // tslint:disable-next-line:variable-name
-    private _interpolationArgs = new BehaviorSubject<IInterpolationArgs>(undefined);
-    public interpolationArgs$: Observable<IInterpolationArgs> = this._interpolationArgs.pipe(filter(x => !!x));
+    private _interpolationArgs = new BehaviorSubject<IInterpolationArgs>(
+        undefined,
+    );
+    public interpolationArgs$: Observable<IInterpolationArgs> = this._interpolationArgs.pipe(
+        filter(x => !!x),
+    );
 
     constructor(
         private fb: FormBuilder,
         private router: Router,
         private route: ActivatedRoute,
     ) {
-        this.functionArgsForm.patchValue(generateRandomFunctionArgs());
+        this.functionArgsForm.patchValue(generateRandomFunctionArgs(), {
+            emitEvent: false,
+        });
         this.functionArgsForm.markAllAsTouched();
         this.initFrameForm();
         this.initOthersForm();
-        this.updateParams();
         this.createUpdateParamsSubscription();
+        this.resolveQuery();
     }
 
     private initFrameForm() {
-        this.windowFrameForm.patchValue(generateRandomField());
+        this.windowFrameForm.patchValue(generateRandomField(), {
+            emitEvent: false,
+        });
         this.windowFrameForm.controls.windowA.setAsyncValidators([
             BoundsValidator.createValidator(
                 this.windowFrameForm,
@@ -111,6 +133,7 @@ export class ControlsService implements OnDestroy {
                 this.windowFrameForm.getRawValue().windowC,
                 this.windowFrameForm.getRawValue().windowD,
             ),
+            { emitEvent: false },
         );
         this.masterSub.add(
             combineLatest([
@@ -147,7 +170,8 @@ export class ControlsService implements OnDestroy {
                 this.functionArgsForm.valueChanges,
                 this.windowFrameForm.valueChanges,
                 this.interpolationForm.valueChanges,
-            ]).pipe(debounceTime(1), skip(1), tap(console.log))
+            ])
+                .pipe(debounceTime(1), skip(1))
                 .subscribe(() => this.updateParams()),
         );
     }
@@ -166,16 +190,14 @@ export class ControlsService implements OnDestroy {
                     this.windowFrameForm.getRawValue(),
                 ),
             });
-            console.log(this.windowFrameForm.valid);
             this._functionArgs.next(this.functionArgsForm.getRawValue());
             this._interpolationArgs.next(this.interpolationForm.getRawValue());
             this._windowFrame.next(this.windowFrameForm.getRawValue());
         }
-
     }
 
     resolveQuery(): void {
-        this.route.queryParams.pipe(take(1)).subscribe(x => {
+        this.route.queryParams.pipe(skip(1), take(1)).subscribe(x => {
             Object.keys(x).length
                 ? this.updateFormsValuesFromQuery(x)
                 : this.updateParams();
@@ -186,6 +208,7 @@ export class ControlsService implements OnDestroy {
         this.functionArgsForm.patchValue(params);
         this.windowFrameForm.patchValue(params);
         this.interpolationForm.patchValue(params);
+        setTimeout(() => this.updateParams(), 10);
     }
 
     public randomizeFunctionArgs() {

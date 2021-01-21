@@ -32,13 +32,13 @@ export class BoundsValidator {
             return timer(10).pipe(
                 map(() => {
                     if (isMinimal) {
-                        return form?.controls[compareField].value >
-                            control.value
+                        return +form?.controls[compareField].value >
+                            +control.value
                             ? null
                             : { illegalBound: true };
                     } else {
-                        return form?.controls[compareField].value <
-                            control.value
+                        return +form?.controls[compareField].value <
+                            +control.value
                             ? null
                             : { illegalBound: true };
                     }

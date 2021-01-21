@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
     selector: 'na-about',
-    template: `<span class="about">Выполнил Колбёшин М.И ИВТ-42</span>`,
+    template: `<span class="greek about">Выполнил Колбёшин М.И ИВТ-42</span>`,
     styleUrls: ['./about.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

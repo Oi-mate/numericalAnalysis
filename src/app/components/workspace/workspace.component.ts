@@ -7,9 +7,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspaceComponent implements OnInit {
-
     constructor() {}
 
-    ngOnInit(): void {
-    }
+    ngOnInit(): void {}
 }
