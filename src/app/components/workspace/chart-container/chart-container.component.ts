@@ -63,7 +63,7 @@ export class ChartContainerComponent implements OnInit {
         },
         series: [
             {
-                name: 'Origin',
+                name: 'N',
                 turboThreshold: 500000,
                 data: [],
                 lineColor: Highcharts.getOptions().colors[0],
@@ -74,7 +74,7 @@ export class ChartContainerComponent implements OnInit {
                 threshold: null,
             },
             {
-                name: 'Iterations',
+                name: 'P',
                 turboThreshold: 500000,
                 data: [],
                 lineColor: Highcharts.getOptions().colors[1],
