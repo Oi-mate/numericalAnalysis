@@ -147,6 +147,14 @@
             >!<span class="centerize">ε</span></mat-error
         >
     </mat-form-field>
+    <mat-form-field appearance="fill" class="math-field greek row">
+        <mat-label>Выделенный параметр</mat-label>
+        <mat-select formControlName="chosenParam">
+            <mat-option *ngFor="let param of paramValues" [value]="param.value">
+                {{param.text}}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
 </div>
 <mat-divider></mat-divider>
 <div class="subtitle greek">
@@ -166,17 +174,6 @@
             matInput
             autocomplete="off"
         />
-        <span
-            matSuffix
-            class="rnd"
-            (click)="
-                service.randomize(
-                    service.windowFrameForm,
-                    'windowA',
-                    randomFieldMinimum
-                )
-            "
-        ></span>
         <mat-error
             *ngIf="
                 service.windowFrameForm.controls.windowA.errors?.illegalBound
@@ -196,17 +193,6 @@
             matInput
             autocomplete="off"
         />
-        <span
-            matSuffix
-            class="rnd"
-            (click)="
-                service.randomize(
-                    service.windowFrameForm,
-                    'windowB',
-                    randomFieldMaximum
-                )
-            "
-        ></span>
         <mat-error
             *ngIf="
                 service.windowFrameForm.controls.windowB.errors?.illegalBound
@@ -226,17 +212,6 @@
             matInput
             autocomplete="off"
         />
-        <span
-            matSuffix
-            class="rnd"
-            (click)="
-                service.randomize(
-                    service.windowFrameForm,
-                    'windowC',
-                    randomFieldMinimum
-                )
-            "
-        ></span>
         <mat-error
             *ngIf="
                 service.windowFrameForm.controls.windowC.errors?.illegalBound
@@ -256,17 +231,6 @@
             matInput
             autocomplete="off"
         />
-        <span
-            matSuffix
-            class="rnd"
-            (click)="
-                service.randomize(
-                    service.windowFrameForm,
-                    'windowD',
-                    randomFieldMaximum
-                )
-            "
-        ></span>
         <mat-error
             *ngIf="
                 service.windowFrameForm.controls.windowD.errors?.illegalBound
@@ -382,19 +346,28 @@
             "
         ></span>
         <mat-error
-            *ngIf="
-                service.interpolationForm.controls.XZero.errors?.required &&
-                !service.interpolationForm.controls.XZero.errors
-                    ?.illegalXZeroValue
-            "
-            >!x<span class="under-stroke">o</span></mat-error
+            *ngIf="service.interpolationForm.controls.XZero.errors?.required"
+            >!X<span class="under-stroke">o</span></mat-error
         >
         <mat-error
             *ngIf="
                 service.interpolationForm.controls.XZero.errors
                     ?.illegalXZeroValue
             "
-            >!X<span class="under-stroke">o</span></mat-error
+            >X<span class="under-stroke">o</span> < A || X<span class="under-stroke">o</span> > B </mat-error
         >
+    </mat-form-field>
+</div>
+<mat-divider></mat-divider>
+<div class="subtitle greek">
+    Шаг дискретизации графика
+    <span matTooltip="Значения A,B, n, m, p, h влияют на производительность. В итоге будет отображено ((B-A)/h) * (n/p) точек."
+          [matTooltipPosition]="'above'"
+          class="questionmark rnd"></span>
+</div>
+<div class="math-inputs" [formGroup]="service.graphControlsForm">
+    <mat-form-field appearance="fill" class="math-field window">
+        <mat-label class="math-label">h</mat-label>
+        <input type="number" matInput autocomplete="off" formControlName="steps"/>
     </mat-form-field>
 </div>

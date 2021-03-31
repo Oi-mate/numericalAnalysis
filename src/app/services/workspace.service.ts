@@ -1,17 +1,24 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { ControlsService } from './controls.service';
-import { BehaviorSubject, combineLatest, Subscription } from 'rxjs';
-import { IFunctionArgs, IWindowFrame } from '../models/types/coefficientTypes';
-import { MAIN_FUNCTION_VALUE } from '../models/maths/MAIN_FUNCTION';
-import { debounceTime, filter } from 'rxjs/operators';
+import {Injectable, OnDestroy} from '@angular/core';
+import {ControlsService} from './controls.service';
+import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
+import {IFunctionArgs, IInterpolationArgs, IWindowFrame} from '../models/types/coefficientTypes';
+import {MAIN_FUNCTION_VALUE} from '../models/maths/MAIN_FUNCTION';
+import {debounceTime, filter} from 'rxjs/operators';
+import {EqParameters, ValuesToNumber} from '../utils/form-utils';
 
 @Injectable({
     providedIn: 'root',
 })
 export class WorkspaceService implements OnDestroy {
     private masterSub = new Subscription();
-    res = new BehaviorSubject(undefined);
-    res$ = this.res.pipe(filter(x => !!x));
+    private args: IFunctionArgs;
+    private frame: IWindowFrame;
+
+    private originLine = new BehaviorSubject<[number, number][]>(undefined);
+    originLine$ = this.originLine.pipe(filter(x => !!x?.length));
+
+    private interpolatedLine = new BehaviorSubject<[number, number][]>(undefined);
+    interpolatedLine$ = this.interpolatedLine.pipe(filter(x => !!x?.length));
 
     constructor(private controls: ControlsService) {
         this.createMainSub();
@@ -22,54 +29,52 @@ export class WorkspaceService implements OnDestroy {
     }
 
     private createMainSub() {
-        combineLatest([this.controls.functionArgs$, this.controls.windowFrame$])
+        combineLatest([
+          this.controls.functionArgs$,
+          this.controls.windowFrame$,
+          this.controls.interpolationArgs$,
+          this.controls.steps$
+        ])
             .pipe(debounceTime(1))
-            .subscribe(([args, frame]) => {
-                console.log(args, frame);
-                this.createLine(args, frame);
+            .subscribe(([args, frame, interpolation, steps]) => {
+                this.args = args as IFunctionArgs;
+                this.frame = (ValuesToNumber(frame) as IWindowFrame);
+                this.createOriginLine(this.args, this.frame, interpolation, steps);
             });
     }
 
-    private createLine(args: IFunctionArgs, frame: IWindowFrame) {
-        const res = [];
-        // console.log(7.50, MAIN_FUNCTION_VALUE(args.alpha, args.beta, args.gamma, args.delta, args.epsilon, 7.50));
-        // console.log(7.51, MAIN_FUNCTION_VALUE(args.alpha, args.beta, args.gamma, args.delta, args.epsilon, 7.51));
-        // console.log(7.52, MAIN_FUNCTION_VALUE(args.alpha, args.beta, args.gamma, args.delta, args.epsilon, 7.52));
-        // console.log(7.53, MAIN_FUNCTION_VALUE(args.alpha, args.beta, args.gamma, args.delta, args.epsilon, 7.53));
-        // console.log(7.54, MAIN_FUNCTION_VALUE(args.alpha, args.beta, args.gamma, args.delta, args.epsilon, 7.54));
-        const res2 = [];
-        for (let x = -10; x < 10; x += 0.01) {
-            res.push([
-                x,
-                MAIN_FUNCTION_VALUE(
-                    args.alpha,
-                    args.beta,
-                    args.gamma,
-                    args.delta,
-                    args.epsilon,
-                    x,
-                ),
-            ]);
-        }
-        for (let x = -10; x < 10; x += 0.1) {
-            res2.push([
-                +x.toFixed(2),
-                MAIN_FUNCTION_VALUE(
-                    args.alpha,
-                    args.beta,
-                    args.gamma,
-                    args.delta,
-                    args.epsilon,
-                    +x.toFixed(2),
-                ),
-            ]);
-        }
-        console.log(
-            res,
-            res2,
-            res2.find(x => x[0] === 5.7),
-            res.find(x => x[0] === 5.7),
+    private createOriginLine(args: IFunctionArgs, frame: IWindowFrame, interpolation: IInterpolationArgs, steps: number) {
+        console.log(args, frame, interpolation, args.chosenParam === EqParameters.alpha);
+        const origin = [];
+        const interpolated = [];
+        const fx = (yo, x) => MAIN_FUNCTION_VALUE(
+          args.chosenParam === EqParameters.alpha ? x : args.alpha,
+          args.chosenParam === EqParameters.beta ? x : args.beta,
+          args.chosenParam === EqParameters.gamma ? x : args.gamma,
+          args.chosenParam === EqParameters.delta ? x : args.delta,
+          args.chosenParam === EqParameters.epsilon ? x : args.epsilon,
+          yo,
         );
-        this.res.next(res);
+        for (let x = frame.windowA; x < frame.windowB; x += steps) {
+
+                let y = +interpolation.XZero;
+
+                for (let i = 0; i < interpolation.m; i++) {
+                    y = fx(y, x);
+                }
+                if (y > frame.windowC && y < frame.windowD) {
+                    origin.push([x, y]);
+                }
+                for (let i = 0; i < interpolation.n; i++) {
+                    y = fx(y, x);
+                    if (y > frame.windowC && y < frame.windowD) {
+                        if (i % (+interpolation.p) === 0) {
+                            interpolated.push([x, y]);
+                        }
+                    }
+                }
+        }
+        this.originLine.next(origin);
+        this.interpolatedLine.next(interpolated);
     }
 }

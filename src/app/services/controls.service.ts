@@ -10,7 +10,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import {
     BehaviorSubject,
-    combineLatest,
+    combineLatest, forkJoin, merge,
     Observable,
     race,
     Subscription,
@@ -18,7 +18,7 @@ import {
 import {
     betweenValidator,
     BoundsValidator,
-    minMaxRangeValidator,
+    minMaxRangeValidator, moreThanZeroValidator,
 } from '../utils/validators';
 import { debounceTime, filter, skip, take, tap } from 'rxjs/operators';
 import {
@@ -26,6 +26,7 @@ import {
     IInterpolationArgs,
     IWindowFrame,
 } from '../models/types/coefficientTypes';
+import {EqParameters} from '../utils/form-utils';
 
 @Injectable({
     providedIn: 'root',
@@ -37,7 +38,9 @@ export class ControlsService implements OnDestroy {
         gamma: ['', [Validators.required, minMaxRangeValidator(-100, 100)]],
         delta: ['', [Validators.required, minMaxRangeValidator(-100, 100)]],
         epsilon: { value: '', disabled: true },
+        chosenParam: [EqParameters.alpha, []]
     });
+
     public windowFrameForm = this.fb.group({
         windowA: ['', [Validators.required]],
         windowB: ['', [Validators.required]],
@@ -49,6 +52,9 @@ export class ControlsService implements OnDestroy {
         n: ['', [Validators.required, minMaxRangeValidator(1, 500)]],
         m: ['', [Validators.required, minMaxRangeValidator(1, 500)]],
         p: ['', [Validators.required, minMaxRangeValidator(0, 25)]],
+    });
+    public graphControlsForm = this.fb.group({
+        steps: ['0.1', [Validators.required, moreThanZeroValidator]],
     });
 
     private masterSub = new Subscription();
@@ -69,6 +75,12 @@ export class ControlsService implements OnDestroy {
     );
     public interpolationArgs$: Observable<IInterpolationArgs> = this._interpolationArgs.pipe(
         filter(x => !!x),
+    );
+
+    // tslint:disable-next-line:variable-name
+    private _steps = new BehaviorSubject<number>(undefined);
+    public steps$: Observable<number> = this._steps.pipe(
+      filter(x => !!x),
     );
 
     constructor(
@@ -119,11 +131,6 @@ export class ControlsService implements OnDestroy {
             ),
         ]);
         this.windowFrameForm.updateValueAndValidity();
-        this.masterSub.add(
-            combineLatest([
-                this.windowFrameForm.controls.windowA.valueChanges,
-            ]).subscribe(),
-        );
         this.windowFrameForm.markAllAsTouched();
     }
 
@@ -137,12 +144,13 @@ export class ControlsService implements OnDestroy {
         );
         this.masterSub.add(
             combineLatest([
-                this.windowFrameForm.controls.windowC.valueChanges,
-                this.windowFrameForm.controls.windowD.valueChanges,
+                this.windowFrameForm.controls.windowA.valueChanges,
+                this.windowFrameForm.controls.windowB.valueChanges,
             ])
-                .pipe(debounceTime(1))
+                .pipe(debounceTime(10))
                 .subscribe(() => {
                     this.setZXeroValidators();
+                    this.updateParams();
                 }),
         );
         this.setZXeroValidators();
@@ -166,34 +174,47 @@ export class ControlsService implements OnDestroy {
 
     createUpdateParamsSubscription() {
         this.masterSub.add(
-            race([
-                this.functionArgsForm.valueChanges,
-                this.windowFrameForm.valueChanges,
-                this.interpolationForm.valueChanges,
-            ])
-                .pipe(debounceTime(1), skip(1))
-                .subscribe(() => this.updateParams()),
+            merge(
+                this.functionArgsForm.valueChanges.pipe(tap(x => console.log(x))),
+                this.windowFrameForm.valueChanges.pipe(tap(x => console.log(x))),
+                this.interpolationForm.valueChanges.pipe(tap(x => console.log(x))),
+                this.graphControlsForm.valueChanges.pipe(tap(x => console.log(x))),
+            )
+                .pipe(
+                  debounceTime(1),
+                  skip(1))
+                .subscribe(() => {
+                    this.updateParams();
+                }),
         );
     }
 
     updateParams() {
-        if (
-            this.windowFrameForm.valid &&
-            this.interpolationForm.valid &&
-            this.functionArgsForm.valid
-        ) {
-            this.router.navigate([], {
-                relativeTo: this.route,
-                queryParams: Object.assign(
-                    this.functionArgsForm.getRawValue(),
-                    this.interpolationForm.getRawValue(),
-                    this.windowFrameForm.getRawValue(),
-                ),
-            });
-            this._functionArgs.next(this.functionArgsForm.getRawValue());
-            this._interpolationArgs.next(this.interpolationForm.getRawValue());
-            this._windowFrame.next(this.windowFrameForm.getRawValue());
-        }
+        // console.log(this.windowFrameForm.status,
+        //   this.interpolationForm.status,
+        //   this.functionArgsForm.status,
+        //   this.graphControlsForm.status);
+        setTimeout(() => {
+            if (
+              this.windowFrameForm.valid &&
+              this.interpolationForm.valid &&
+              this.functionArgsForm.valid &&
+              this.graphControlsForm.valid
+            ) {
+                this.router.navigate([], {
+                    relativeTo: this.route,
+                    queryParams: Object.assign(
+                      this.functionArgsForm.getRawValue(),
+                      this.interpolationForm.getRawValue(),
+                      this.windowFrameForm.getRawValue(),
+                    ),
+                });
+                this._functionArgs.next(this.functionArgsForm.getRawValue());
+                this._interpolationArgs.next(this.interpolationForm.getRawValue());
+                this._windowFrame.next(this.windowFrameForm.getRawValue());
+                this._steps.next(+this.graphControlsForm.getRawValue().steps)
+            }
+        }, 10);
     }
 
     resolveQuery(): void {
@@ -302,6 +323,6 @@ export class ControlsService implements OnDestroy {
                     );
                 }
         }
-        this.updateParams();
+        setTimeout(() => this.updateParams(), 10);
     }
 }

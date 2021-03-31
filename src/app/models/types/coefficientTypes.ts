@@ -1,3 +1,5 @@
+import {EqParameters} from '../../utils/form-utils';
+
 export interface IWindowFrame {
     windowA: number;
     windowB: number;
@@ -11,6 +13,7 @@ export interface IFunctionArgs {
     gamma: number;
     delta: number;
     epsilon: number;
+    chosenParam: EqParameters;
 }
 
 export interface IInterpolationArgs {

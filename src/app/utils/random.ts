@@ -5,12 +5,12 @@ export const getRandomNumber = (min, max, round = false) => {
 
 export const randomFunctionArg = () => getRandomNumber(-100, 100).toFixed(2);
 export const randomFieldMinimum = () => getRandomNumber(-100, 100, true);
-export const randomFieldMaximum = minValue =>
-    getRandomNumber(minValue, minValue + 200, true);
+export const randomFieldMaximum = (minValue, delta = 20) =>
+    getRandomNumber(minValue, minValue + delta, true);
 export const randomInterpolationSteps = () => getRandomNumber(1, 500, true);
 export const randomXZero = (XZeroMin, XZeroMax) =>
     getRandomNumber(XZeroMin, XZeroMax, true);
-export const randomPrecision = () => getRandomNumber(0, 25, true);
+export const randomPrecision = () => getRandomNumber(10, 25, true);
 
 export const generateRandomField = () => {
     const A = randomFieldMinimum();
@@ -19,7 +19,7 @@ export const generateRandomField = () => {
         windowA: A,
         windowB: randomFieldMaximum(A),
         windowC: C,
-        windowD: randomFieldMaximum(C),
+        windowD: randomFieldMaximum(C, 100),
     };
 };
 

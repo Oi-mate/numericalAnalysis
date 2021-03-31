@@ -8,6 +8,8 @@ import {
     randomPrecision,
     randomXZero,
 } from '../../../utils/random';
+import {parameterValues} from '../../../utils/form-utils';
+
 
 @Component({
     selector: 'na-controls',
@@ -16,6 +18,8 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ControlsComponent implements OnInit {
+
+    paramValues = parameterValues;
     randomFunctionArg = randomFunctionArg;
     randomFieldMinimum = randomFieldMinimum;
     randomFieldMaximum = randomFieldMaximum;

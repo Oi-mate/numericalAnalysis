@@ -16,6 +16,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChartContainerComponent } from './components/workspace/chart-container/chart-container.component';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSelectModule} from '@angular/material/select';
 
 @NgModule({
     declarations: [
@@ -38,6 +40,8 @@ import { ChartContainerComponent } from './components/workspace/chart-container/
         MatInputModule,
         MatDividerModule,
         MatTooltipModule,
+        MatCheckboxModule,
+        MatSelectModule
     ],
     providers: [],
     bootstrap: [AppComponent],

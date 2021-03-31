@@ -45,6 +45,18 @@ mat-form-field.mat-form-field.math-field {
             margin-left: -9px;
         }
     }
+    &.row {
+        flex-basis: calc(100% - 10px);
+        max-width: unset;
+    }
+}
+
+.mat-checkbox-background {
+    background-color: #6f6f6f !important;
+}
+
+.mat-tooltip {
+    white-space: pre-line;
 }
 
 .greek {

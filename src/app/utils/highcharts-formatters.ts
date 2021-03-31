@@ -5,14 +5,14 @@ export function xAxisTickLabelFormatterFn() {
     return modPi === 0 || modPi === +Math.PI.toFixed(2)
         ? `${
               Math.round(this.value / Math.PI) === 0
-                  ? ''
-                  : Math.round(this.value / Math.PI)
-          }π`
+                  ? '0'
+                  : Math.round(this.value / Math.PI) + 'π'
+          }`
         : modPiBy2 === 0 || modPiBy2 === +(Math.PI / 2).toFixed(2)
         ? `${
-              Math.round(this.value / Math.PI / 2) === 0
-                  ? ''
-                  : Math.round(this.value / Math.PI / 2)
+              Math.round(this.value / (Math.PI / 2)) === 0
+                  ? this.value < 0 ? '-' : ''
+                  : Math.round(this.value / (Math.PI / 2)) + ''
           }π/2`
         : this.value;
 }

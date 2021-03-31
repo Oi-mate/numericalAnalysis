@@ -47,3 +47,18 @@ export class BoundsValidator {
         };
     }
 }
+
+export const stepsValidator: (min, max) => ValidatorFn = (
+  min,
+  max,
+) => control => {
+    return +control.value >= min && +control.value <= max
+      ? null
+      : { illegalXZeroValue: true };
+};
+
+export const moreThanZeroValidator: () => ValidatorFn = () => control => {
+    return +control.value > 0
+      ? null
+      : { moreThanZero: true };
+}

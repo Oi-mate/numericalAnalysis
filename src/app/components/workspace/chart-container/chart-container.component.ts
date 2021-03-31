@@ -6,9 +6,10 @@ import {
 } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import { WorkspaceService } from '../../../services/workspace.service';
-import { Subscription } from 'rxjs';
+import {combineLatest, pipe, Subscription} from 'rxjs';
 import { xAxisTickLabelFormatterFn } from '../../../utils/highcharts-formatters';
 import { screenSizeOption } from '../../../utils/highcharts-option-samples';
+import {debounceTime} from 'rxjs/operators';
 declare var require: any;
 const Boost = require('highcharts/modules/boost');
 const noData = require('highcharts/modules/no-data-to-display');
@@ -27,18 +28,19 @@ export class ChartContainerComponent implements OnInit {
     public options: any = {
         chart: {
             type: 'spline',
+            // type: 'scatter',
             zoomType: 'xy',
             height: this.screenHeight,
         },
         title: {
-            text: 'Sample Scatter Plot',
+            text: '',
         },
         credits: {
             enabled: false,
         },
         tooltip: {
             formatter: function () {
-                return `(${this.x.toFixed(2)}; ${this.y})`;
+                return `(${this.x}; ${this.y})`;
             },
         },
         xAxis: {
@@ -63,11 +65,23 @@ export class ChartContainerComponent implements OnInit {
             {
                 name: 'Origin',
                 turboThreshold: 500000,
-                data: [[new Date('2018-01-25 18:38:31').getTime(), 2]],
-                // lineColor: Highcharts.getOptions().colors[1],
+                data: [],
+                lineColor: Highcharts.getOptions().colors[0],
                 marker: {
                     enabled: true,
                     radius: 0,
+                },
+                threshold: null,
+            },
+            {
+                name: 'Iterations',
+                turboThreshold: 500000,
+                data: [],
+                lineColor: Highcharts.getOptions().colors[1],
+                lineWidth: 0,
+                marker: {
+                    enabled: true,
+                    radius: 2,
                 },
                 threshold: null,
             },
@@ -89,10 +103,16 @@ export class ChartContainerComponent implements OnInit {
     ngOnInit(): void {
         Highcharts.chart('container', this.options);
         this.masterSub.add(
-            this.workspaceService.res$.subscribe(x => {
-                this.options.series[0]['data'] = x;
-                Highcharts.chart('container', this.options);
-            }),
+          combineLatest([
+              this.workspaceService.originLine$,
+              this.workspaceService.interpolatedLine$
+          ]).pipe(debounceTime(20))
+            .subscribe(([origin, interpolated]) => {
+              // console.log(origin, interpolated);
+              this.options.series[0]['data'] = origin;
+              this.options.series[1]['data'] = interpolated;
+              Highcharts.chart('container', this.options);
+          })
         );
         this.updateAllowed = true;
     }
